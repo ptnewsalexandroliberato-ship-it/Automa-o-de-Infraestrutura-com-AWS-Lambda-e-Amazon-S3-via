@@ -1,6 +1,3 @@
-# Automa-o-de-Infraestrutura-com-AWS-Lambda-e-Amazon-S3-via
-Este projeto demonstra a automação de fluxos de trabalho na nuvem utilizando AWS Lambda e Amazon S3, orquestrados pelo AWS CloudFormation.
-
 # Projeto: Automatizando Tarefas com AWS Lambda e S3 via CloudFormation
 
 ## 🎯 Objetivo
@@ -26,12 +23,12 @@ Este laboratório tem como foco a implementação de uma arquitetura **Serverles
 
 ## 📝 Insights e Aprendizados
 1.  **Gatilhos de Evento (Triggers)**: Aprendi como conectar o S3 à Lambda, permitindo que processos (como processamento de imagens ou logs) ocorram em tempo real após um upload.
-2.  **Permissões de Recurso**: Entendi a importância das `LambdaPermission`, que autorizam o serviço S3 a invocar a função Lambda.
+2.  **Permissões de Recurso**: Entendi a importância das `LambdaPermission`, que autorizam o serviço S3 a invocar a função Lambda. Sem essa configuração explícita, a integração falha por falta de privilégios.
 3.  **Escalabilidade Serverless**: A grande vantagem de não precisar gerenciar servidores, deixando a AWS escalar a execução conforme a demanda de arquivos no bucket.
 
 ---
 
-## 💻 Exemplo de Template (Integração S3-Lambda)
+## 💻 Template de Infraestrutura (`automation-stack.yaml`)
 
 ```yaml
 AWSTemplateFormatVersion: '2010-09-09'
@@ -69,7 +66,11 @@ Resources:
         ZipFile: |
           def handler(event, context):
               print("Evento recebido do S3 com sucesso!")
-              return {"status": "sucesso"}
+              import json
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps('Sucesso no processamento!')
+              }
 
   # 4. Permissão para o S3 chamar a Lambda
   S3InvokeLambdaPermission:
