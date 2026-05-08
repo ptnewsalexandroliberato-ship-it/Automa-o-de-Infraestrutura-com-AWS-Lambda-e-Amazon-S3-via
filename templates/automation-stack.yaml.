@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Automação S3 e Lambda - Projeto DIO'
+
+Resources:
+  # 1. Bucket S3 que servirá como gatilho
+  MeuBucketAutomatizado:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'dio-lambda-s3-project-${AWS::AccountId}'
+
+  # 2. Role do IAM para dar permissões à Lambda
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+
+  # 3. Função Lambda que processará os arquivos
+  MinhaFuncaoAutomata:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.9
+      Code:
+        ZipFile: |
+          import json
+          def handler(event, context):
+              print("Evento recebido do S3 com sucesso!")
+              return {"status": "sucesso"}
+
+  # 4. Permissão necessária para o S3 invocar a Lambda
+  S3InvokeLambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref MinhaFuncaoAutomata
+      Principal: s3.amazonaws.com
+      SourceArn: !GetAtt MeuBucketAutomatizado.Arn
